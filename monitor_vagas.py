@@ -8,7 +8,6 @@ import os
 # CONFIGURAÇÕES DO TELEGRAM E DA BUSCA
 # ==========================================
 TELEGRAM_TOKEN = "8900930532:AAGHQOqiXJJgOA1Gppxxetjbv9URQ_g17Lw"
-"
 TELEGRAM_CHAT_ID = "6682065062"
 
 # URL da busca na OLX (Exemplo: São Paulo e região - Vagas de Emprego)
