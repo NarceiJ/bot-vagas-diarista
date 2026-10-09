@@ -104,6 +104,7 @@ def buscar_vagas_olx():
 
 def executar_monitoramento():
     """Função principal que integra a busca, filtragem e envio dos alertas."""
+    enviar_mensagem_telegram("🚨 Teste: O robô está funcionando e conectado com sucesso!")
     vagas_vistas = carregar_vagas_vistas()
     vagas_encontradas = buscar_vagas_olx()
     novas_vagas_cont = 0
