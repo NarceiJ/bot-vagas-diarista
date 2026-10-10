@@ -24,4 +24,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Executar o robô
-        run: python monitor_vagas.py
+     env:
+       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+     run: python monitor_vagas.py
