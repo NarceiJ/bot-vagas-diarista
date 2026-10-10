@@ -25,8 +25,8 @@ jobs:
 
       - name: Executar o robô
         env:
-          TELEGRAM_TOKEN: ${{ secrets.8900930532:AAFkm43xk9i53owSXEpcrxJRuFBvv9EkiR0}}
-          TELEGRAM_CHAT_ID: ${{ secrets.6682065062 }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python monitor_vagas.py
 
       - name: Commit e Push de vagas vistas (se houver atualização)
