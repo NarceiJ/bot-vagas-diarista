@@ -10,6 +10,14 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 ARQUIVO_VISTAS = "vagas_vistas.json"
 
+# Cabeçalhos robustos para simular um navegador real e evitar bloqueios básicos
+HEADERS_GLOBAL = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://www.google.com/"
+}
+
 def carregar_vagas_vistas():
     if os.path.exists(ARQUIVO_VISTAS):
         try:
@@ -44,30 +52,32 @@ def enviar_mensagem_telegram(mensagem):
 def buscar_vagas_olx():
     vagas = []
     url = "https://www.olx.com.br/brasil?q=diarista"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=HEADERS_GLOBAL, timeout=10)
+        print(f"OLX Status Code: {response.status_code}")
+        
         if response.status_code != 200:
-            print(f"Erro ao acessar OLX: Status {response.status_code}")
             return vagas
             
         soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Procura por links de anúncios na OLX de forma mais abrangente
         anuncios = soup.find_all('a', href=True)
         
         for anuncio in anuncios:
             href = anuncio.get('href')
-            if href and "/vi/" in href:
+            if href and ("/vi/" in href or "olx.com.br/" in href) and "q=" not in href:
                 titulo = anuncio.get_text().strip()
-                if titulo and len(titulo) > 10:
+                if titulo and len(titulo) > 12: # Filtra títulos muito curtos
                     link = href if href.startswith("http") else f"https://www.olx.com.br{href}"
-                    vagas.append({
-                        "id": link,
-                        "titulo": f"🧹 [OLX] {titulo}",
-                        "link": link
-                    })
+                    # Evita duplicadas na mesma execução
+                    if not any(v['link'] == link for v in vagas):
+                        vagas.append({
+                            "id": link,
+                            "titulo": f"🧹 [OLX] {titulo}",
+                            "link": link
+                        })
     except Exception as e:
         print(f"Erro no scraper da OLX: {e}")
         
@@ -76,31 +86,36 @@ def buscar_vagas_olx():
 def buscar_vagas_indeed():
     vagas = []
     url = "https://br.indeed.com/jobs?q=diarista&l=Brasil"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=HEADERS_GLOBAL, timeout=10)
+        print(f"Indeed Status Code: {response.status_code}")
+        
         if response.status_code != 200:
-            print(f"Erro ao acessar Indeed: Status {response.status_code}")
             return vagas
             
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        for card in soup.find_all('div', class_='job_seen_beacon'):
-            titulo_tag = card.find('h2', class_='jobTitle')
+        # Busca cards de vagas do Indeed (tentando múltiplas classes comuns)
+        cards = soup.find_all('div', class_=lambda x: x and ('job_seen_beacon' in x or 'card' in x or 'slider_item' in x))
+        if not cards:
+            cards = soup.find_all('td', class_='resultContent')
+            
+        for card in cards:
+            titulo_tag = card.find('h2', class_=lambda x: x and 'jobTitle' in x) or card.find('a')
             link_tag = card.find('a', href=True)
             
             if titulo_tag and link_tag:
                 titulo = titulo_tag.get_text().strip()
-                link = "https://br.indeed.com" + link_tag['href'] if not link_tag['href'].startswith("http") else link_tag['href']
+                href = link_tag['href']
+                link = "https://br.indeed.com" + href if not href.startswith("http") else href
                 
-                vagas.append({
-                    "id": link,
-                    "titulo": f"💼 [Indeed] {titulo}",
-                    "link": link
-                })
+                if not any(v['link'] == link for v in vagas):
+                    vagas.append({
+                        "id": link,
+                        "titulo": f"💼 [Indeed] {titulo}",
+                        "link": link
+                    })
     except Exception as e:
         print(f"Erro no scraper do Indeed: {e}")
         
@@ -113,6 +128,7 @@ def main():
     
     # Coleta de todas as fontes
     todas_vagas = buscar_vagas_olx() + buscar_vagas_indeed()
+    print(f"Total de vagas brutas encontradas: {len(todas_vagas)}")
     
     contador_novas = 0
     for vaga in todas_vagas:
