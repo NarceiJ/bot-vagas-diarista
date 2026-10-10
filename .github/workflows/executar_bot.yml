@@ -25,7 +25,7 @@ jobs:
 
       - name: Executar o robô
         env:
-          TELEGRAM_TOKEN: ${{ secrets.8900930532:AAGHQOqiXJJgOA1Gppxxetjbv9URQ_g17Lw }}
+          TELEGRAM_TOKEN: ${{ secrets.8900930532:AAFkm43xk9i53owSXEpcrxJRuFBvv9EkiR0}}
           TELEGRAM_CHAT_ID: ${{ secrets.6682065062 }}
         run: python monitor_vagas.py
 
