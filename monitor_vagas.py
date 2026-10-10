@@ -5,8 +5,9 @@ from bs4 import BeautifulSoup
 
 # --- CONFIGURAÇÕES DO TELEGRAM ---
 # Dica: O ideal é guardar isso como Secrets do GitHub, mas se preferir, pode colocar direto aqui:
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "SEU_TOKEN_AQUI")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "SEU_CHAT_ID_AQUI")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8900930532:AAGHQOqiXJJgOA1Gppxxetjbv9URQ_g17Lw
+")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6682065062")
 
 ARQUIVO_VISTAS = "vagas_vistas.json"
 
